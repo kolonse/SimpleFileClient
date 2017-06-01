@@ -5,8 +5,10 @@ import (
 	"bufio"
 	"errors"
 	"flag"
+	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 )
 
@@ -20,7 +22,7 @@ var Arg = flag.String("a", "[]", "-a=<arg> 如果 -a=[] 此参数必须填写")
 func Check(resp *http.Response) {
 	Code := resp.Header.Get("Code")
 	Message := resp.Header.Get("Message")
-	if Code != "0" {
+	if Code != "0" && Code != "" {
 		panic(errors.New("code:" + Code + ";message:" + Message))
 	}
 }
@@ -75,7 +77,9 @@ func Download() {
 }
 
 func Cmd() {
-	resp, err := http.Post(*Url+*Method+"?cmd="+*CmdN+"&arg="+*Arg, "text/plain", nil)
+	u := *Url + *Method + "?cmd=" + *CmdN + "&arg=" + url.PathEscape(*Arg)
+	fmt.Println("CMD POST", u)
+	resp, err := http.Post(u, "text/plain", nil)
 	if err != nil {
 		panic(errors.New(err.Error()))
 	}
